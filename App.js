@@ -6,10 +6,11 @@ import {
   Button,
   StyleSheet,
   FlatList,
-  TouchableOpacity
+  TouchableOpacity,
+  Alert
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-import BarcodeScanner from 'react-native-barcodescanner';
+import { Constants, BarCodeScanner, Permissions } from 'expo';
 
  class HomeScreen extends Component {
   static navigationOptions = {
@@ -86,37 +87,41 @@ class ScanScreen extends Component {
     super(props);
 
     this.state = {
-      barcode: '',
-      cameraType: 'back',
-      text: 'Scan Barcode',
-      torchMode: 'off',
-      type: '',
+      hasCameraPermission: null
     };
   }
 
-  barcodeReceived(e) {
-    if (e.data !== this.state.barcode || e.type !== this.state.type) Vibration.vibrate();
+  componentDidMount() {
+     this._requestCameraPermission();
+   }
 
-    this.setState({
-      barcode: e.data,
-      text: `${e.data} (${e.type})`,
-      type: e.type,
-    });
-  }
+   _requestCameraPermission = async () => {
+     const { status } = await Permissions.askAsync(Permissions.CAMERA);
+     this.setState({
+       hasCameraPermission: status === 'granted',
+     });
+   };
+
+   _handleBarCodeRead = data => {
+     Alert.alert(
+       'Scan successful!',
+       JSON.stringify(data)
+     );
+   };
 
   render() {
     return (
-      <View style={styles.container}>
-        <BarcodeScanner
-          onBarCodeRead={this.barcodeReceived.bind(this)}
-          style={{ flex: 1 }}
-          torchMode={this.state.torchMode}
-          cameraType={this.state.cameraType}
-        />
-        <View style={styles.statusBar}>
-          <Text style={styles.statusBarText}>{this.state.text}</Text>
+        <View style={styles.container}>
+          {
+            this.state.hasCameraPermission === null ?
+              <Text>Requesting for camera permission</Text> :
+            this.state.hasCameraPermission === false ?
+              <Text>Camera permission is not granted</Text> :
+            <BarCodeScanner onBarCodeRead={this._handleBarCodeRead}
+              style={{ height: 200, width: 200 }}
+          />
+          }
         </View>
-      </View>
     );
   }
 
@@ -125,7 +130,11 @@ class ScanScreen extends Component {
 const styles = StyleSheet.create({
   container: {
    flex: 1,
-   paddingTop: 22
+   paddingTop: 22,
+   alignItems: 'center',
+   justifyContent: 'center',
+   paddingTop: Constants.statusBarHeight,
+   backgroundColor: '#ecf0f1',
   },
   statusBar: {
     height: 100,
