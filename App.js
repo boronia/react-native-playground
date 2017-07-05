@@ -3,7 +3,10 @@ import React, { Component } from 'react';
 import {
   Text,
   View,
-  Button
+  Button,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
@@ -11,12 +14,12 @@ import { StackNavigator } from 'react-navigation';
   static navigationOptions = {
     title: 'React Native Experiment',
   };
+
   render() {
     const { navigate } = this.props.navigation;
     return (
-      <View>
-        <Text>Bug someone: </Text>
-        <Text>{"\n"}</Text>
+      <View style={styles.container}>
+        <Text>Bug9 someone: </Text>
         <Button
           onPress={() => navigate('Chat', { user: 'Jade' })}
           title="Say hello to Jade"
@@ -30,6 +33,22 @@ import { StackNavigator } from 'react-navigation';
         <Button
           onPress={() => navigate('Chat', { user: 'Andrew' })}
           title="Say hello to Andrew"
+        />
+        <Text>{"\n"}</Text>
+        <FlatList
+            data={[
+                    {key: '1', name: 'Jade'},
+                    {key: '2', name: 'Clara'},
+                    {key: '3', name: 'Andrew'},
+
+                  ]}
+            renderItem={ ({item}) =>
+               <TouchableOpacity onPress={() => navigate('Chat', { user: item.name })}> // why won't handlePress() work with this.props.navigation??
+                <Text style={styles.item}>{item.name}</Text>
+              </TouchableOpacity>
+            }
+
+            renderSectionHeader={({section}) => <Text style={styles.sectionHeader}>{section.title}</Text>}
         />
       </View>
     );
@@ -51,6 +70,27 @@ class ChatScreen extends Component {
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+   flex: 1,
+   paddingTop: 22
+  },
+  sectionHeader: {
+    paddingTop: 2,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingBottom: 2,
+    fontSize: 14,
+    fontWeight: 'bold',
+    backgroundColor: 'rgba(247,247,247,1.0)',
+  },
+  item: {
+    padding: 10,
+    fontSize: 18,
+    height: 44,
+  },
+})
 
 const  SimpleAppNavigator = StackNavigator({
   Home: { screen: HomeScreen },
